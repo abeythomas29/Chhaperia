@@ -1,6 +1,6 @@
 declare const process: { env: Record<string, string | undefined> };
 
-const baseURL = process.env.EXPO_PUBLIC_API_BASE_URL || "http://localhost:4000";
+const baseURL = process.env.EXPO_PUBLIC_API_BASE_URL || "https://chhaperia-cables-backend.onrender.com";
 let authToken: string | null = null;
 
 type RequestOptions = {

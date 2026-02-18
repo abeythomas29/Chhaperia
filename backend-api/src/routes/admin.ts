@@ -16,26 +16,70 @@ router.get("/dashboard", async (_req, res) => {
   const todayStart = dayjs().startOf("day").toDate();
   const weekStart = dayjs().startOf("week").toDate();
   const monthStart = dayjs().startOf("month").toDate();
+  const sevenDaysStart = dayjs().subtract(6, "day").startOf("day").toDate();
 
-  const [todayRolls, weeklyRolls, monthlyRolls, byCode, byCompany] = await Promise.all([
+  const [todayRolls, weeklyRolls, monthlyRolls, monthlyEntryCount, byCode, byCompany, recentEntries] = await Promise.all([
     prisma.productionEntry.aggregate({ where: { date: { gte: todayStart } }, _sum: { rollsCount: true } }),
     prisma.productionEntry.aggregate({ where: { date: { gte: weekStart } }, _sum: { rollsCount: true } }),
     prisma.productionEntry.aggregate({ where: { date: { gte: monthStart } }, _sum: { rollsCount: true } }),
+    prisma.productionEntry.count({ where: { date: { gte: monthStart } } }),
     prisma.productionEntry.groupBy({ by: ["productCodeId"], _sum: { totalQuantity: true } }),
     prisma.productionEntry.groupBy({ by: ["issuedToCompanyId"], _sum: { totalQuantity: true } }),
+    prisma.productionEntry.findMany({
+      where: { date: { gte: sevenDaysStart } },
+      select: { date: true, rollsCount: true, totalQuantity: true },
+      orderBy: { date: "asc" },
+    }),
   ]);
 
   const codeMap = new Map((await prisma.productCode.findMany()).map((c) => [c.id, c.code]));
   const companyMap = new Map((await prisma.companyClient.findMany()).map((c) => [c.id, c.name]));
+  const monthlyRollCount = monthlyRolls._sum.rollsCount ?? 0;
+  const weeklyRollCount = weeklyRolls._sum.rollsCount ?? 0;
+  const dayOfMonth = Math.max(dayjs().date(), 1);
+  const avgDailyRolls = monthlyRollCount / dayOfMonth;
+  const avgRollsPerEntry = monthlyEntryCount > 0 ? monthlyRollCount / monthlyEntryCount : 0;
+
+  const productionByCode = byCode
+    .map((b) => ({ code: codeMap.get(b.productCodeId) ?? b.productCodeId, totalQuantity: b._sum.totalQuantity ?? 0 }))
+    .sort((a, b) => b.totalQuantity - a.totalQuantity);
+
+  const issuedByCompany = byCompany
+    .map((b) => ({ company: companyMap.get(b.issuedToCompanyId) ?? b.issuedToCompanyId, totalQuantity: b._sum.totalQuantity ?? 0 }))
+    .sort((a, b) => b.totalQuantity - a.totalQuantity);
+
+  const trendMap = new Map<string, { rolls: number; totalQuantity: number }>();
+  for (let i = 0; i < 7; i += 1) {
+    const key = dayjs(sevenDaysStart).add(i, "day").format("YYYY-MM-DD");
+    trendMap.set(key, { rolls: 0, totalQuantity: 0 });
+  }
+  for (const e of recentEntries) {
+    const key = dayjs(e.date).format("YYYY-MM-DD");
+    const prev = trendMap.get(key);
+    if (!prev) continue;
+    prev.rolls += e.rollsCount;
+    prev.totalQuantity += e.totalQuantity;
+    trendMap.set(key, prev);
+  }
+  const dailyTrend = Array.from(trendMap.entries()).map(([date, values]) => ({ date, ...values }));
 
   res.json({
     rolls: {
       today: todayRolls._sum.rollsCount ?? 0,
-      weekly: weeklyRolls._sum.rollsCount ?? 0,
-      monthly: monthlyRolls._sum.rollsCount ?? 0,
+      weekly: weeklyRollCount,
+      monthly: monthlyRollCount,
     },
-    productionByCode: byCode.map((b) => ({ code: codeMap.get(b.productCodeId) ?? b.productCodeId, totalQuantity: b._sum.totalQuantity ?? 0 })),
-    issuedByCompany: byCompany.map((b) => ({ company: companyMap.get(b.issuedToCompanyId) ?? b.issuedToCompanyId, totalQuantity: b._sum.totalQuantity ?? 0 })),
+    stats: {
+      monthlyEntries: monthlyEntryCount,
+      avgDailyRolls: Number(avgDailyRolls.toFixed(2)),
+      avgRollsPerEntry: Number(avgRollsPerEntry.toFixed(2)),
+      majorBuyer: issuedByCompany[0] ?? null,
+      topMaterial: productionByCode[0] ?? null,
+      weeklyProductionRate: Number((weeklyRollCount / 7).toFixed(2)),
+    },
+    productionByCode,
+    issuedByCompany,
+    dailyTrend,
   });
 });
 
@@ -123,6 +167,32 @@ router.get("/logs/export", async (req, res) => {
 router.get("/products", async (_req, res) => {
   const categories = await prisma.productCategory.findMany({ include: { codes: true }, orderBy: { name: "asc" } });
   res.json(categories);
+});
+
+router.get("/companies", async (_req, res) => {
+  const companies = await prisma.companyClient.findMany({ orderBy: { createdAt: "desc" } });
+  res.json(companies);
+});
+
+router.post("/companies", async (req, res) => {
+  const parsed = z.object({ name: z.string().min(2) }).safeParse(req.body);
+  if (!parsed.success) return res.status(400).json(parsed.error.flatten());
+
+  const created = await prisma.companyClient.create({
+    data: { name: parsed.data.name.trim(), status: STATUSES.ACTIVE },
+  });
+  res.status(201).json(created);
+});
+
+router.patch("/companies/:id/status", async (req, res) => {
+  const parsed = z.object({ status: statusSchema }).safeParse(req.body);
+  if (!parsed.success) return res.status(400).json(parsed.error.flatten());
+
+  const updated = await prisma.companyClient.update({
+    where: { id: String(req.params.id) },
+    data: { status: String(parsed.data.status) },
+  });
+  res.json(updated);
 });
 
 router.post("/products/category", requireRole(USER_ROLES.SUPER_ADMIN), async (req, res) => {

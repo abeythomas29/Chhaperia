@@ -5,6 +5,7 @@ import DashboardPage from "./pages/DashboardPage";
 import LogsPage from "./pages/LogsPage";
 import ProductsPage from "./pages/ProductsPage";
 import UsersPage from "./pages/UsersPage";
+import CompaniesPage from "./pages/CompaniesPage";
 import { useAuth } from "./context/AuthContext";
 
 function Protected({ children }: { children: JSX.Element }) {
@@ -29,6 +30,7 @@ export default function App() {
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="logs" element={<LogsPage />} />
         <Route path="products" element={<ProductsPage />} />
+        <Route path="companies" element={<CompaniesPage />} />
         {user?.role === "SUPER_ADMIN" && <Route path="users" element={<UsersPage />} />}
         <Route index element={<Navigate to="/dashboard" replace />} />
       </Route>

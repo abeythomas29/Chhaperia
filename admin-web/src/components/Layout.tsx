@@ -16,9 +16,8 @@ export default function Layout() {
           <NavLink to="/dashboard" className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}>Dashboard</NavLink>
           <NavLink to="/logs" className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}>Production Log</NavLink>
           <NavLink to="/products" className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}>Products</NavLink>
-          {user?.role === "SUPER_ADMIN" && (
-            <NavLink to="/users" className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}>Users</NavLink>
-          )}
+          <NavLink to="/companies" className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}>Companies</NavLink>
+          {user?.role === "SUPER_ADMIN" && <NavLink to="/users" className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}>Users</NavLink>}
         </nav>
 
         <button className="logout-btn" onClick={logout}>Logout</button>

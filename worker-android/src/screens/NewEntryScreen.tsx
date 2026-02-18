@@ -30,7 +30,9 @@ export default function NewEntryScreen({ onDone }: { onDone: () => void }) {
     issuedToCompanyId: "",
   });
 
-  useEffect(() => {
+  async function loadMetadata() {
+    setLoadingMeta(true);
+    setMetaError("");
     api.get("/metadata/master")
       .then(({ data }) => {
         const firstCategory = data.categories[0];
@@ -47,6 +49,10 @@ export default function NewEntryScreen({ onDone }: { onDone: () => void }) {
         setMetaError("Unable to load product/company options. Please check backend connection.");
       })
       .finally(() => setLoadingMeta(false));
+  }
+
+  useEffect(() => {
+    loadMetadata();
   }, []);
 
   async function submit() {
@@ -87,6 +93,9 @@ export default function NewEntryScreen({ onDone }: { onDone: () => void }) {
         <Text style={styles.subtitle}>Semiconductor Woven Water Blocking Tape</Text>
         {loadingMeta && <Text style={styles.info}>Loading options...</Text>}
         {!loadingMeta && metaError ? <Text style={styles.error}>{metaError}</Text> : null}
+        <Pressable style={styles.refreshBtn} onPress={loadMetadata}>
+          <Text style={styles.refreshBtnText}>Refresh Options</Text>
+        </Pressable>
       </View>
 
       <Text style={styles.label}>Product Code</Text>
@@ -94,6 +103,7 @@ export default function NewEntryScreen({ onDone }: { onDone: () => void }) {
         {codes.map((c) => (
           <SelectChip key={c.id} label={c.code} active={form.productCodeId === c.id} onPress={() => setForm((p) => ({ ...p, productCodeId: c.id }))} />
         ))}
+        {!codes.length && !loadingMeta ? <Text style={styles.emptyMsg}>No active product codes available.</Text> : null}
       </View>
 
       <Text style={styles.label}>Date (YYYY-MM-DD)</Text>
@@ -126,6 +136,7 @@ export default function NewEntryScreen({ onDone }: { onDone: () => void }) {
         {companies.map((c) => (
           <SelectChip key={c.id} label={c.name} active={form.issuedToCompanyId === c.id} onPress={() => setForm((p) => ({ ...p, issuedToCompanyId: c.id }))} />
         ))}
+        {!companies.length && !loadingMeta ? <Text style={styles.emptyMsg}>No active companies available.</Text> : null}
       </View>
 
       <View style={styles.totalCard}>
@@ -153,6 +164,18 @@ const styles = StyleSheet.create({
   subtitle: { marginTop: 2, fontSize: 14, color: "#677285" },
   info: { marginTop: 6, color: "#4c5c77", fontWeight: "700" },
   error: { marginTop: 6, color: "#c22323", fontWeight: "700" },
+  emptyMsg: { color: "#6b7483", fontWeight: "600" },
+  refreshBtn: {
+    alignSelf: "flex-start",
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: "#d1dae7",
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    backgroundColor: "#ffffff",
+  },
+  refreshBtnText: { color: "#2e3c52", fontWeight: "800" },
   label: { marginTop: 6, fontSize: 16, fontWeight: "800", color: "#2a3342" },
   input: {
     borderWidth: 1,
