@@ -1,0 +1,26 @@
+# dependencies
+node_modules/
+**/node_modules/
+
+# build outputs
+dist/
+build/
+**/build/
+backend-api/dist/
+admin-web/dist/
+worker-android/android/.gradle/
+worker-android/android/build/
+worker-android/android/app/build/
+
+# expo / android studio
+.expo/
+.idea/
+
+# local env/db/logs
+.env
+.env.local
+*.log
+backend-api/prisma/dev.db
+
+# mac
+.DS_Store

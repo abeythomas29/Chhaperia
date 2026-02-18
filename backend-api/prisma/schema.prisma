@@ -1,0 +1,76 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model ProductCategory {
+  id        String        @id @default(cuid())
+  name      String        @unique
+  status    String        @default("ACTIVE")
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  codes     ProductCode[]
+}
+
+model ProductCode {
+  id          String           @id @default(cuid())
+  categoryId  String
+  code        String           @unique
+  description String?
+  status      String           @default("ACTIVE")
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  category    ProductCategory  @relation(fields: [categoryId], references: [id])
+  entries     ProductionEntry[]
+}
+
+model Worker {
+  id           String            @id @default(cuid())
+  name         String
+  employeeId   String            @unique
+  username     String?           @unique
+  passwordHash String
+  role         String
+  status       String            @default("ACTIVE")
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  entries      ProductionEntry[]
+}
+
+model CompanyClient {
+  id        String            @id @default(cuid())
+  name      String            @unique
+  status    String            @default("ACTIVE")
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  entries   ProductionEntry[]
+}
+
+model ProductionEntry {
+  id               String        @id @default(cuid())
+  productCodeId    String
+  date             DateTime
+  workerId         String
+  rollsCount       Int
+  unit             String
+  quantityPerRoll  Float
+  totalQuantity    Float
+  issuedToCompanyId String
+  timestamp        DateTime      @default(now())
+  syncStatus       String        @default("SYNCED")
+  sourceDeviceId   String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  productCode      ProductCode   @relation(fields: [productCodeId], references: [id])
+  worker           Worker        @relation(fields: [workerId], references: [id])
+  issuedToCompany  CompanyClient @relation(fields: [issuedToCompanyId], references: [id])
+
+  @@index([date])
+  @@index([productCodeId])
+  @@index([issuedToCompanyId])
+}

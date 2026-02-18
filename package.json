@@ -1,0 +1,14 @@
+{
+  "name": "chhaperia-cables-production-tracker",
+  "private": true,
+  "workspaces": [
+    "backend-api",
+    "admin-web",
+    "worker-android"
+  ],
+  "scripts": {
+    "dev:api": "npm --workspace backend-api run dev",
+    "dev:web": "npm --workspace admin-web run dev",
+    "dev:mobile": "npm --workspace worker-android run start"
+  }
+}

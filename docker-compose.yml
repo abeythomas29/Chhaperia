@@ -1,0 +1,21 @@
+version: '3.9'
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: chhaperia-postgres
+    environment:
+      POSTGRES_DB: chhaperia_tracker
+      POSTGRES_USER: chhaperia_user
+      POSTGRES_PASSWORD: chhaperia_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - chhaperia_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chhaperia_user -d chhaperia_tracker"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  chhaperia_pg_data:
