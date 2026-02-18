@@ -3,7 +3,7 @@ services:
     name: chhaperia-cables-backend
     runtime: node
     rootDir: backend-api
-    plan: starter
+    plan: free
     buildCommand: npm install && npm run prisma:generate && npm run build
     startCommand: npx prisma db push && npm run seed && npm run start
     healthCheckPath: /health
@@ -23,6 +23,6 @@ services:
 
 databases:
   - name: chhaperia-cables-db
-    plan: starter
+    plan: free
     databaseName: chhaperia_tracker
     user: chhaperia_user
