@@ -9,9 +9,16 @@ import entryRoutes from "./routes/entries.js";
 import adminRoutes from "./routes/admin.js";
 
 const app = express();
-const corsOrigin = process.env.CORS_ORIGIN?.trim() || "*";
+const corsOriginRaw = process.env.CORS_ORIGIN?.trim() || "*";
+const corsOrigins =
+  corsOriginRaw === "*"
+    ? true
+    : corsOriginRaw
+        .split(",")
+        .map((origin) => origin.trim())
+        .filter(Boolean);
 
-app.use(cors({ origin: corsOrigin === "*" ? true : corsOrigin }));
+app.use(cors({ origin: corsOrigins }));
 app.use(helmet());
 app.use(express.json());
 app.use(morgan("dev"));
