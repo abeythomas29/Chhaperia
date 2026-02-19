@@ -18,11 +18,16 @@ type DashboardData = {
 
 export default function DashboardPage() {
   const [data, setData] = useState<DashboardData | null>(null);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    api.get("/admin/dashboard").then((res) => setData(res.data));
+    api
+      .get("/admin/dashboard")
+      .then((res) => setData(res.data))
+      .catch(() => setError("Unable to load dashboard data. Please login again and check backend deployment."));
   }, []);
 
+  if (error) return <p className="error">{error}</p>;
   if (!data) return <p>Loading...</p>;
 
   return (
