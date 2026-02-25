@@ -14,6 +14,7 @@ export type Category = {
 export type Company = {
   id: string;
   name: string;
+  status?: string;
 };
 
 export type EntryPayload = {
@@ -31,4 +32,16 @@ export type LocalEntry = EntryPayload & {
   localId: string;
   status: "PENDING" | "SYNCED" | "FAILED";
   createdAt: string;
+};
+
+export type MasterData = {
+  categories: Category[];
+  companies: Company[];
+  updatedAt: string;
+};
+
+export type OfflineCredential = {
+  identity: string;
+  password: string;
+  user: User;
 };

@@ -41,6 +41,11 @@ input, select {
 
 .brand-block h2 { margin: 0; font-size: 24px; letter-spacing: .3px; }
 .brand-block p { margin: 6px 0 0; color: #d7e5f8; font-size: 13px; }
+.brand-logo { display: flex; align-items: center; gap: 8px; }
+.brand-logo svg { width: 88px; height: auto; display: block; }
+.brand-logo span { font-size: 28px; font-weight: 900; letter-spacing: 1px; color: #111; line-height: 1; }
+.brand-logo.compact span { font-size: 18px; color: #fff; }
+.brand-logo.compact svg { width: 64px; }
 
 .nav-list { display: grid; gap: 8px; margin-top: 6px; }
 .nav-link {

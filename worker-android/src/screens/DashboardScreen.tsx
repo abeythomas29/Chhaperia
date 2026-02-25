@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import BrandLogo from "../components/BrandLogo";
-import { api } from "../api/client";
-import { getQueue } from "../storage/local";
+import { getQueue, loadMasterData } from "../storage/local";
 
 export default function DashboardScreen({
   onNewEntry,
@@ -12,15 +11,16 @@ export default function DashboardScreen({
 }: {
   onNewEntry: () => void;
   onPastEntries: () => void;
-  onSync: () => Promise<void>;
+  onSync: () => Promise<{ synced: number; masterUpdated: boolean }>;
   onLogout: () => void;
 }) {
   const [codes, setCodes] = useState<string[]>([]);
   const [pending, setPending] = useState(0);
   const [syncing, setSyncing] = useState(false);
+  const [syncMsg, setSyncMsg] = useState("Offline-first mode. Use Sync to pull latest products/vendors.");
 
   async function load() {
-    const { data } = await api.get("/metadata/master");
+    const data = await loadMasterData();
     const activeCodes = data.categories.flatMap((c: any) => c.codes.map((code: any) => code.code));
     setCodes(activeCodes);
     const queue = await getQueue();
@@ -33,8 +33,13 @@ export default function DashboardScreen({
 
   async function triggerSync() {
     setSyncing(true);
-    await onSync();
+    const result = await onSync();
     await load();
+    setSyncMsg(
+      result.masterUpdated
+        ? `Synced ${result.synced} entries and updated products/vendors.`
+        : `Synced ${result.synced} entries. No new master data.`
+    );
     setSyncing(false);
   }
 
@@ -55,6 +60,7 @@ export default function DashboardScreen({
           <Text style={styles.syncBtnText}>{syncing ? "Syncing..." : "Sync Now"}</Text>
         </Pressable>
       </View>
+      <Text style={styles.syncInfo}>{syncMsg}</Text>
 
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Active Product Codes</Text>
@@ -116,6 +122,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   syncBtnText: { color: "#fff", fontSize: 16, fontWeight: "800" },
+  syncInfo: { color: "#5d6777", fontWeight: "700", fontSize: 13 },
   card: { backgroundColor: "#fff", borderRadius: 14, padding: 14, borderWidth: 1, borderColor: "#e4e9f0" },
   cardTitle: { fontSize: 16, fontWeight: "800", color: "#1a1f2a", marginBottom: 8 },
   chipsWrap: { flexDirection: "row", flexWrap: "wrap", gap: 8 },

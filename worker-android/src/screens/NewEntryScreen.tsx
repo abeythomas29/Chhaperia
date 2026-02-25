@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { api } from "../api/client";
-import { addLocalEntry, updateLocalEntryStatus } from "../storage/local";
+import { addLocalEntry, loadMasterData, updateLocalEntryStatus } from "../storage/local";
 import { EntryPayload } from "../types";
 
 function uid() {
@@ -33,22 +33,23 @@ export default function NewEntryScreen({ onDone }: { onDone: () => void }) {
   async function loadMetadata() {
     setLoadingMeta(true);
     setMetaError("");
-    api.get("/metadata/master")
-      .then(({ data }) => {
-        const firstCategory = data.categories[0];
-        const codeList = firstCategory?.codes || [];
-        setCodes(codeList);
-        setCompanies(data.companies);
-        setForm((prev) => ({
-          ...prev,
-          productCodeId: codeList[0]?.id || "",
-          issuedToCompanyId: data.companies[0]?.id || "",
-        }));
-      })
-      .catch(() => {
-        setMetaError("Unable to load product/company options. Please check backend connection.");
-      })
-      .finally(() => setLoadingMeta(false));
+    try {
+      const data = await loadMasterData();
+      const firstCategory = data.categories[0];
+      const codeList = firstCategory?.codes || [];
+      const companyList = data.companies || [];
+      setCodes(codeList);
+      setCompanies(companyList);
+      setForm((prev) => ({
+        ...prev,
+        productCodeId: prev.productCodeId || codeList[0]?.id || "",
+        issuedToCompanyId: prev.issuedToCompanyId || companyList[0]?.id || "",
+      }));
+    } catch {
+      setMetaError("Unable to load local product/company options.");
+    } finally {
+      setLoadingMeta(false);
+    }
   }
 
   useEffect(() => {
@@ -94,7 +95,7 @@ export default function NewEntryScreen({ onDone }: { onDone: () => void }) {
         {loadingMeta && <Text style={styles.info}>Loading options...</Text>}
         {!loadingMeta && metaError ? <Text style={styles.error}>{metaError}</Text> : null}
         <Pressable style={styles.refreshBtn} onPress={loadMetadata}>
-          <Text style={styles.refreshBtnText}>Refresh Options</Text>
+          <Text style={styles.refreshBtnText}>Reload Local Options</Text>
         </Pressable>
       </View>
 

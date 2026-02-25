@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import NetInfo from "@react-native-community/netinfo";
 import LoginScreen from "./src/screens/LoginScreen";
 import DashboardScreen from "./src/screens/DashboardScreen";
 import NewEntryScreen from "./src/screens/NewEntryScreen";
@@ -17,16 +16,12 @@ export default function App() {
 
   useEffect(() => {
     loadSession();
-    const unsubscribe = NetInfo.addEventListener((state) => {
-      if (state.isConnected) syncPendingEntries();
-    });
-    return unsubscribe;
   }, []);
 
   async function loadSession() {
     const { token } = await loadAuth();
     if (token) {
-      setAuthToken(token);
+      setAuthToken(token === "OFFLINE" ? null : token);
       setScreen("dashboard");
     }
     setLoading(false);
@@ -34,7 +29,7 @@ export default function App() {
 
   async function onLogin(token: string, user: any) {
     await saveAuth(token, JSON.stringify(user));
-    setAuthToken(token);
+    setAuthToken(token === "OFFLINE" ? null : token);
     setScreen("dashboard");
   }
 
@@ -56,7 +51,7 @@ export default function App() {
     <DashboardScreen
       onNewEntry={() => setScreen("new-entry")}
       onPastEntries={() => setScreen("past-entries")}
-      onSync={async () => { await syncPendingEntries(); }}
+      onSync={async () => await syncPendingEntries()}
       onLogout={onLogout}
     />
   );

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import BrandLogo from "../components/BrandLogo";
 import { api } from "../api/client";
+import { findOfflineCredential, saveOfflineCredential } from "../storage/local";
 
 export default function LoginScreen({ onLogin }: { onLogin: (token: string, user: any) => void }) {
   const [identity, setIdentity] = useState("EMP001");
@@ -16,9 +17,15 @@ export default function LoginScreen({ onLogin }: { onLogin: (token: string, user
         setError("Use worker credentials for this app.");
         return;
       }
+      await saveOfflineCredential({ identity, password, user: data.user });
       onLogin(data.token, data.user);
     } catch {
-      setError("Invalid ID or password.");
+      const cached = await findOfflineCredential(identity);
+      if (cached && cached.password === password && cached.user.role === "WORKER") {
+        onLogin("OFFLINE", cached.user);
+        return;
+      }
+      setError("Invalid ID/password. Connect internet once to register offline login.");
     }
   }
 

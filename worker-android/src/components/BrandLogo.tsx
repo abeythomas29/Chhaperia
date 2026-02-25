@@ -1,53 +1,55 @@
 import { StyleSheet, Text, View } from "react-native";
 
-export default function BrandLogo() {
+export default function BrandLogo({ large = false }: { large?: boolean }) {
+  const ringSize = large ? 78 : 58;
+  const ringThickness = large ? 6 : 5;
+  const gap = large ? 10 : 8;
+  const textSize = large ? 36 : 28;
+  const markHeight = ringSize + gap * 3;
+
   return (
     <View style={styles.wrap}>
-      <View style={styles.iconWrap}>
-        <View style={styles.cOuter} />
-        <View style={styles.cInner} />
-        <View style={styles.diamond} />
+      <View style={[styles.iconWrap, { width: large ? 98 : 84, height: markHeight }]}>
+        {[0, 1, 2, 3].map((i) => (
+          <View
+            key={i}
+            style={[
+              styles.ring,
+              {
+                width: ringSize - i * gap * 2,
+                height: ringSize - i * gap * 2,
+                borderRadius: (ringSize - i * gap * 2) / 2,
+                borderWidth: ringThickness,
+                left: i * gap,
+                top: i * gap,
+              },
+            ]}
+          />
+        ))}
+        <View style={[styles.diamond, { left: large ? 66 : 54, width: large ? 24 : 18, height: large ? 24 : 18 }]} />
       </View>
-      <Text style={styles.wordmark}>CHHAPERIA</Text>
+      <Text style={[styles.wordmark, { fontSize: textSize }]}>CHHAPERIA</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: { flexDirection: "row", alignItems: "center", gap: 12 },
-  iconWrap: { width: 72, height: 52, justifyContent: "center" },
-  cOuter: {
+  wrap: { flexDirection: "row", alignItems: "center", gap: 10 },
+  iconWrap: { justifyContent: "center" },
+  ring: {
     position: "absolute",
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    borderWidth: 6,
     borderColor: "#f26722",
     borderRightColor: "transparent",
-    left: 0,
-  },
-  cInner: {
-    position: "absolute",
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    borderWidth: 4,
-    borderColor: "#f26722",
-    borderRightColor: "transparent",
-    left: 8,
   },
   diamond: {
     position: "absolute",
-    width: 18,
-    height: 18,
     backgroundColor: "#f26722",
     transform: [{ rotate: "45deg" }],
-    left: 42,
+    top: 30,
   },
   wordmark: {
-    fontSize: 28,
-    fontWeight: "800",
+    fontWeight: "900",
     color: "#111",
-    letterSpacing: 1,
+    letterSpacing: 0.8,
   },
 });

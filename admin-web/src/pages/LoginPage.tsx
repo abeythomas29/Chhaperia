@@ -2,6 +2,7 @@ import { FormEvent, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api/client";
 import { useAuth } from "../context/AuthContext";
+import BrandLogo from "../components/BrandLogo";
 
 export default function LoginPage() {
   const [identity, setIdentity] = useState("manager1");
@@ -29,6 +30,7 @@ export default function LoginPage() {
   return (
     <div className="centered login-screen">
       <form onSubmit={onSubmit} className="card login-card">
+        <BrandLogo />
         <h2>Chhaperia Cables</h2>
         <p>Admin sign-in for internal production tracking</p>
 

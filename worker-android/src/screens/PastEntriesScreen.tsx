@@ -6,12 +6,19 @@ import { getQueue } from "../storage/local";
 export default function PastEntriesScreen({ onBack }: { onBack: () => void }) {
   const [localEntries, setLocalEntries] = useState<any[]>([]);
   const [serverEntries, setServerEntries] = useState<any[]>([]);
+  const [syncInfo, setSyncInfo] = useState("");
 
   async function load() {
     const queue = await getQueue();
     setLocalEntries(queue);
-    const { data } = await api.get("/entries/mine");
-    setServerEntries(data.slice(0, 40));
+    try {
+      const { data } = await api.get("/entries/mine");
+      setServerEntries(data.slice(0, 40));
+      setSyncInfo("");
+    } catch {
+      setServerEntries([]);
+      setSyncInfo("Offline mode: synced records are shown after manual Sync.");
+    }
   }
 
   useEffect(() => {
@@ -21,6 +28,7 @@ export default function PastEntriesScreen({ onBack }: { onBack: () => void }) {
   return (
     <ScrollView style={styles.wrap} contentContainerStyle={styles.container}>
       <Text style={styles.title}>Past Entries</Text>
+      {syncInfo ? <Text style={styles.info}>{syncInfo}</Text> : null}
 
       <View style={styles.card}>
         <Text style={styles.heading}>Local Queue</Text>
@@ -55,6 +63,7 @@ const styles = StyleSheet.create({
   wrap: { flex: 1, backgroundColor: "#eef2f5" },
   container: { padding: 16, gap: 12, paddingBottom: 28 },
   title: { fontSize: 26, fontWeight: "800", color: "#182132" },
+  info: { color: "#5f6f84", fontWeight: "700" },
   card: {
     backgroundColor: "#fff",
     borderRadius: 14,

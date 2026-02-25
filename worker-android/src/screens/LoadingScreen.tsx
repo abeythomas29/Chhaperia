@@ -4,11 +4,9 @@ import BrandLogo from "../components/BrandLogo";
 export default function LoadingScreen() {
   return (
     <View style={styles.container}>
-      <View style={styles.logoCard}>
-        <BrandLogo />
-        <Text style={styles.company}>Chhaperia Cables</Text>
-        <Text style={styles.tag}>Production Tracker</Text>
-      </View>
+      <BrandLogo large />
+      <Text style={styles.company}>Chhaperia Cables</Text>
+      <Text style={styles.tag}>Production Tracker</Text>
       <ActivityIndicator size="large" color="#f26722" />
       <Text style={styles.wait}>Loading secure workspace...</Text>
     </View>
@@ -21,18 +19,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 16,
-    backgroundColor: "#f2f5f8",
+    backgroundColor: "#f5f7fb",
     padding: 16,
-  },
-  logoCard: {
-    backgroundColor: "#fff",
-    borderRadius: 18,
-    paddingHorizontal: 16,
-    paddingVertical: 18,
-    borderWidth: 1,
-    borderColor: "#e1e6ef",
-    alignItems: "center",
-    gap: 4,
   },
   company: { fontSize: 20, fontWeight: "800", color: "#1d1d1d" },
   tag: { fontSize: 13, color: "#5d6777", fontWeight: "700" },

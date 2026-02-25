@@ -77,6 +77,14 @@ This provisions:
 After deploy, set:
 - `CORS_ORIGIN=https://<your-vercel-domain>`
 
+Run database setup once (Render Shell):
+- `npx prisma db push`
+- `npm run seed`
+
+Note:
+- Backend service start command is `npm run start` only.
+- Do not run `prisma db push` + `seed` on every startup; it causes slow cold boots.
+
 Alternative backend hosting:
 - Railway/Fly/AWS are also supported as long as `DATABASE_URL`, `JWT_SECRET`, and `CORS_ORIGIN` are configured.
 - Railway config included: `/Users/abeythomas/Chhaperia production tracker/backend-api/railway.json`

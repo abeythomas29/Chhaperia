@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import BrandLogo from "./BrandLogo";
 
 export default function Layout() {
   const { user, logout } = useAuth();
@@ -8,6 +9,7 @@ export default function Layout() {
     <div className="app-shell">
       <aside className="sidebar">
         <div className="brand-block">
+          <BrandLogo compact />
           <h2>Chhaperia Cables</h2>
           <p>Production Control Center</p>
         </div>
